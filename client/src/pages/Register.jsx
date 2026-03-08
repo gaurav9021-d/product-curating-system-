@@ -1,72 +1,62 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Mail, Lock, User, ArrowRight, Send, CheckCircle } from 'lucide-react';
+import { Mail, Lock, ArrowRight, Eye, EyeOff, User } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import api from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
 const Register = () => {
     const navigate = useNavigate();
+    const { signup } = useAuth();
     const [formData, setFormData] = useState({
         name: '',
         email: '',
-        otp: '',
-        password: ''
+        password: '',
+        confirmPassword: ''
     });
-    const [otpSent, setOtpSent] = useState(false);
-    const [loading, setLoading] = useState(false);
-    const [otpLoading, setOtpLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirm, setShowConfirm] = useState(false);
     const [error, setError] = useState('');
-    const [message, setMessage] = useState('');
+    const [loading, setLoading] = useState(false);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
-
-    const handleSendOtp = async (e) => {
-        e.preventDefault();
-        setError('');
-        setMessage('');
-
-        if (!formData.email) {
-            setError('Please enter your email address first.');
-            return;
-        }
-
-        setOtpLoading(true);
-        try {
-            await api.post('/auth/send-otp', { email: formData.email });
-            setOtpSent(true);
-            setMessage('OTP sent successfully! Please check your email inbox (and spam).');
-        } catch (err) {
-            setError(err.response?.data?.message || 'Failed to send OTP. Please try again.');
-        } finally {
-            setOtpLoading(false);
-        }
+        if (error) setError('');
     };
 
     const handleRegister = async (e) => {
         e.preventDefault();
         setError('');
-        setMessage('');
 
-        if (!otpSent) {
-            setError('Please verify your email by sending an OTP first.');
+        // Validation
+        if (!formData.name || !formData.email || !formData.password || !formData.confirmPassword) {
+            setError('Please fill in all fields.');
+            return;
+        }
+
+        if (formData.password.length < 6) {
+            setError('Password must be at least 6 characters long.');
+            return;
+        }
+
+        if (formData.password !== formData.confirmPassword) {
+            setError('Passwords do not match.');
             return;
         }
 
         setLoading(true);
 
         try {
-            await api.post('/auth/register', formData);
-            // On success, redirect to login
-            setMessage('Registration successful! Redirecting to login...');
-            setTimeout(() => {
-                navigate('/login');
-            }, 1500);
+            const result = await signup(formData.name, formData.email, formData.password);
+            if (result.success) {
+                navigate('/');
+            } else {
+                setError(result.message);
+            }
         } catch (err) {
-            setError(err.response?.data?.message || 'Registration failed.');
+            setError('Something went wrong. Please try again.');
+        } finally {
             setLoading(false);
         }
     };
@@ -76,7 +66,7 @@ const Register = () => {
             <Navbar />
 
             <main className="flex-grow flex items-center justify-center py-20 px-4 relative overflow-hidden">
-                {/* Background Blobs for Home-like vibe */}
+                {/* Background Blobs */}
                 <div className="absolute top-0 right-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
                 <div className="absolute bottom-0 left-0 w-96 h-96 bg-secondary/10 rounded-full blur-3xl translate-y-1/3 -translate-x-1/4 pointer-events-none"></div>
 
@@ -90,24 +80,23 @@ const Register = () => {
                     <div className="p-8">
                         <div className="text-center mb-6">
                             <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Create Account</h2>
-                            <p className="text-gray-500 dark:text-gray-400 text-sm">Join SmartPick today</p>
+                            <p className="text-gray-500 dark:text-gray-400 text-sm">Join SmartPick today and start saving</p>
                         </div>
 
                         {error && (
-                            <div className="mb-4 p-3 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 text-sm rounded-lg text-center font-medium border border-red-200 dark:border-red-800">
+                            <motion.div
+                                initial={{ opacity: 0, y: -10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="mb-4 p-3 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 text-sm rounded-lg text-center font-medium border border-red-200 dark:border-red-800"
+                            >
                                 {error}
-                            </div>
-                        )}
-                        {message && (
-                            <div className="mb-4 p-3 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-sm rounded-lg text-center font-medium border border-green-200 dark:border-green-800">
-                                {message}
-                            </div>
+                            </motion.div>
                         )}
 
-                        <form className="space-y-4" onSubmit={handleRegister}>
-                            {/* Slot 1: Name */}
-                            <div className="space-y-1">
-                                <label className="text-sm font-bold text-gray-700 dark:text-gray-300 ml-1">Name</label>
+                        <form className="space-y-5" onSubmit={handleRegister}>
+                            {/* Name */}
+                            <div className="space-y-1.5">
+                                <label className="text-sm font-bold text-gray-700 dark:text-gray-300 ml-1">Full Name</label>
                                 <div className="relative">
                                     <input
                                         type="text"
@@ -122,72 +111,61 @@ const Register = () => {
                                 </div>
                             </div>
 
-                            {/* Slot 2: Email */}
-                            <div className="space-y-1">
-                                <label className="text-sm font-bold text-gray-700 dark:text-gray-300 ml-1">Email</label>
-                                <div className="flex gap-2">
-                                    <div className="relative flex-grow">
-                                        <input
-                                            type="email"
-                                            name="email"
-                                            placeholder="you@example.com"
-                                            required
-                                            value={formData.email}
-                                            onChange={handleChange}
-                                            className="w-full px-4 py-3 pl-10 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white focus:bg-white dark:focus:bg-gray-800 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all placeholder-gray-400 dark:placeholder-gray-500"
-                                        />
-                                        <Mail size={18} className="absolute left-3 top-3.5 text-gray-400 dark:text-gray-500" />
-                                    </div>
-                                    <button
-                                        type="button"
-                                        onClick={handleSendOtp}
-                                        disabled={otpLoading || otpSent}
-                                        className={`px-4 rounded-xl font-bold shadow-sm flex items-center justify-center transition-all ${otpSent ? 'bg-green-500 text-white cursor-default' : 'bg-primary text-white hover:bg-primaryDark'}`}
-                                        title={otpSent ? "OTP Sent" : "Send OTP"}
-                                    >
-                                        {otpLoading ? (
-                                            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                                        ) : otpSent ? (
-                                            <CheckCircle size={20} />
-                                        ) : (
-                                            "Send OTP"
-                                        )}
-                                    </button>
-                                </div>
-                            </div>
-
-                            {/* Slot 3: OTP (Always visible as per request) */}
-                            <div className="space-y-1">
-                                <label className="text-sm font-bold text-gray-700 dark:text-gray-300 ml-1">OTP</label>
+                            {/* Email */}
+                            <div className="space-y-1.5">
+                                <label className="text-sm font-bold text-gray-700 dark:text-gray-300 ml-1">Email Address</label>
                                 <div className="relative">
                                     <input
-                                        type="text"
-                                        name="otp"
-                                        placeholder="Enter 6-digit OTP"
+                                        type="email"
+                                        name="email"
+                                        placeholder="you@example.com"
                                         required
-                                        value={formData.otp}
+                                        value={formData.email}
                                         onChange={handleChange}
-                                        maxLength="6"
-                                        className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white focus:bg-white dark:focus:bg-gray-800 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all tracking-widest text-center font-bold placeholder-gray-400 dark:placeholder-gray-500"
+                                        className="w-full px-4 py-3 pl-10 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white focus:bg-white dark:focus:bg-gray-800 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all placeholder-gray-400 dark:placeholder-gray-500"
                                     />
+                                    <Mail size={18} className="absolute left-3 top-3.5 text-gray-400 dark:text-gray-500" />
                                 </div>
-                                <p className="text-xs text-gray-500 dark:text-gray-400 ml-1">Enter the code sent to your email above.</p>
                             </div>
 
-                            {/* Slot 4: Password */}
-                            <div className="space-y-1">
+                            {/* Password */}
+                            <div className="space-y-1.5">
                                 <label className="text-sm font-bold text-gray-700 dark:text-gray-300 ml-1">Password</label>
                                 <div className="relative">
                                     <input
-                                        type="password"
+                                        type={showPassword ? "text" : "password"}
                                         name="password"
                                         placeholder="Create a strong password"
                                         required
                                         value={formData.password}
                                         onChange={handleChange}
-                                        className="w-full px-4 py-3 pl-10 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white focus:bg-white dark:focus:bg-gray-800 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all placeholder-gray-400 dark:placeholder-gray-500"
+                                        className="w-full px-4 py-3 pl-10 pr-10 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white focus:bg-white dark:focus:bg-gray-800 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all placeholder-gray-400 dark:placeholder-gray-500"
                                     />
                                     <Lock size={18} className="absolute left-3 top-3.5 text-gray-400 dark:text-gray-500" />
+                                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-3.5 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+                                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                    </button>
+                                </div>
+                                <p className="text-xs text-gray-400 dark:text-gray-500 ml-1">Minimum 6 characters</p>
+                            </div>
+
+                            {/* Confirm Password */}
+                            <div className="space-y-1.5">
+                                <label className="text-sm font-bold text-gray-700 dark:text-gray-300 ml-1">Confirm Password</label>
+                                <div className="relative">
+                                    <input
+                                        type={showConfirm ? "text" : "password"}
+                                        name="confirmPassword"
+                                        placeholder="Re-enter your password"
+                                        required
+                                        value={formData.confirmPassword}
+                                        onChange={handleChange}
+                                        className="w-full px-4 py-3 pl-10 pr-10 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white focus:bg-white dark:focus:bg-gray-800 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all placeholder-gray-400 dark:placeholder-gray-500"
+                                    />
+                                    <Lock size={18} className="absolute left-3 top-3.5 text-gray-400 dark:text-gray-500" />
+                                    <button type="button" onClick={() => setShowConfirm(!showConfirm)} className="absolute right-3 top-3.5 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+                                        {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
+                                    </button>
                                 </div>
                             </div>
 
@@ -195,9 +173,13 @@ const Register = () => {
                                 whileHover={{ scale: 1.02 }}
                                 whileTap={{ scale: 0.98 }}
                                 disabled={loading}
-                                className="w-full bg-gradient-to-r from-secondary to-pink-600 text-white py-3.5 rounded-xl font-bold shadow-lg shadow-secondary/30 flex items-center justify-center gap-2 disabled:opacity-70 mt-6"
+                                className="w-full bg-gradient-to-r from-secondary to-pink-600 text-white py-3.5 rounded-xl font-bold shadow-lg shadow-secondary/30 flex items-center justify-center gap-2 disabled:opacity-70 mt-2"
                             >
-                                {loading ? 'Registering...' : 'Sign Up'} <ArrowRight size={18} />
+                                {loading ? (
+                                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                ) : (
+                                    <>Sign Up <ArrowRight size={18} /></>
+                                )}
                             </motion.button>
                         </form>
 

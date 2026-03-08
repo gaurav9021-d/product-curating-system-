@@ -1,25 +1,25 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Mail, Lock, ArrowRight } from 'lucide-react';
+import { Mail, Lock, ArrowRight, Eye, EyeOff } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
 const Login = () => {
     const navigate = useNavigate();
+    const { login } = useAuth();
     const [formData, setFormData] = useState({
         email: '',
         password: ''
     });
+    const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
-    const { login } = useAuth();
-
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
+        if (error) setError('');
     };
 
     const handleLogin = async (e) => {
@@ -28,23 +28,25 @@ const Login = () => {
         setLoading(true);
 
         try {
-            const res = await api.post('/auth/login', formData);
-            login(res.data.user, res.data.token);
-            navigate('/');
+            const result = await login(formData.email, formData.password);
+            if (result.success) {
+                navigate('/');
+            } else {
+                setError(result.message);
+            }
         } catch (err) {
-            setError(err.response?.data?.message || 'Invalid Credentials');
+            setError('Something went wrong. Please try again.');
         } finally {
             setLoading(false);
         }
     };
 
     return (
-
         <div className="min-h-screen flex flex-col bg-background dark:bg-darkBackground transition-colors duration-300">
             <Navbar />
 
             <main className="flex-grow flex items-center justify-center py-20 px-4 relative overflow-hidden">
-                {/* Background Blobs for Home-like vibe */}
+                {/* Background Blobs */}
                 <div className="absolute top-0 right-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
                 <div className="absolute bottom-0 left-0 w-96 h-96 bg-secondary/10 rounded-full blur-3xl translate-y-1/3 -translate-x-1/4 pointer-events-none"></div>
 
@@ -62,9 +64,13 @@ const Login = () => {
                         </div>
 
                         {error && (
-                            <div className="mb-4 p-3 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 text-sm rounded-lg border border-red-200 dark:border-red-800">
+                            <motion.div
+                                initial={{ opacity: 0, y: -10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="mb-4 p-3 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 text-sm rounded-lg border border-red-200 dark:border-red-800"
+                            >
                                 {error}
-                            </div>
+                            </motion.div>
                         )}
 
                         <form className="space-y-6" onSubmit={handleLogin}>
@@ -85,21 +91,21 @@ const Login = () => {
                             </div>
 
                             <div className="space-y-2">
-                                <div className="flex justify-between items-center ml-1">
-                                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Password</label>
-                                    <a href="#" className="text-xs text-primary font-semibold hover:underline">Forgot?</a>
-                                </div>
+                                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 ml-1">Password</label>
                                 <div className="relative">
                                     <input
-                                        type="password"
+                                        type={showPassword ? "text" : "password"}
                                         name="password"
                                         placeholder="••••••••"
                                         required
                                         value={formData.password}
                                         onChange={handleChange}
-                                        className="w-full px-4 py-3 pl-10 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white focus:bg-white dark:focus:bg-gray-800 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all placeholder-gray-400 dark:placeholder-gray-500"
+                                        className="w-full px-4 py-3 pl-10 pr-10 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white focus:bg-white dark:focus:bg-gray-800 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all placeholder-gray-400 dark:placeholder-gray-500"
                                     />
                                     <Lock size={18} className="absolute left-3 top-3.5 text-gray-400 dark:text-gray-500" />
+                                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-3.5 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+                                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                    </button>
                                 </div>
                             </div>
 
@@ -109,7 +115,11 @@ const Login = () => {
                                 disabled={loading}
                                 className="w-full bg-gradient-to-r from-primary to-primaryDark text-white py-3.5 rounded-xl font-bold shadow-lg shadow-primary/30 flex items-center justify-center gap-2 disabled:opacity-70"
                             >
-                                {loading ? 'Signing In...' : 'Sign In'} <ArrowRight size={18} />
+                                {loading ? (
+                                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                ) : (
+                                    <>Sign In <ArrowRight size={18} /></>
+                                )}
                             </motion.button>
                         </form>
 

@@ -1,13 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, X, Send, Bot, User, Sparkles, Loader2, Minimize2 } from 'lucide-react';
+import { GoogleGenerativeAI } from '@google/generative-ai';
+import { fallbackCatalog } from '../data/fallbackCatalog';
 
 const ChatBot = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [messages, setMessages] = useState([
         {
             role: 'assistant',
-            content: "Hey! 👋 I'm SmartPick AI Assistant powered by Sarvam AI. Ask me anything about products, deals, or price comparisons!"
+            content: "Hey! 👋 I'm SmartPick AI Assistant, powered by Gemini. Ask me anything about our products, deals, or price comparisons!"
         }
     ]);
     const [input, setInput] = useState('');
@@ -39,24 +41,42 @@ const ChatBot = () => {
         setIsLoading(true);
 
         try {
-            // Send only the conversation history (not the welcome message)
-            const apiMessages = newMessages
-                .filter((_, i) => i > 0 || newMessages[0].role === 'user')
-                .map(m => ({ role: m.role, content: m.content }));
+            const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+            if (!apiKey) {
+                throw new Error("API_KEY_MISSING");
+            }
 
-            const response = await fetch('http://localhost:5002/api/chat', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ messages: apiMessages })
+            const genAI = new GoogleGenerativeAI(apiKey);
+            
+            // Format product catalog for AI context (names and prices to keep it concise)
+            const catalogSummary = Object.values(fallbackCatalog).map(p => 
+                `Name: ${p.name}, Price: ₹${p.price}, Category: ${p.category}`
+            ).join('\n');
+
+            const model = genAI.getGenerativeModel({
+                model: "gemini-1.5-flash",
+                systemInstruction: `You are the SmartPick AI Assistant. You MUST strictly help users ONLY with e-commerce queries related to our products. You CANNOT answer general knowledge, coding, history, or anything outside e-commerce. If asked about irrelevant topics, politely decline and steer them back to shopping. Use this product catalog to answer:\n\n${catalogSummary}`
             });
 
-            const data = await response.json();
-            setMessages(prev => [...prev, { role: 'assistant', content: data.reply }]);
+            // Format history for Gemini SDK
+            const history = newMessages
+                .filter((_, i) => i > 0) // skip hardcoded welcome message
+                .slice(0, -1) // skip the new user message we are about to send
+                .map(m => ({
+                    role: m.role === 'user' ? 'user' : 'model',
+                    parts: [{ text: m.content }]
+                }));
+
+            const chat = model.startChat({ history });
+            const result = await chat.sendMessage(userMessage.content);
+            
+            setMessages(prev => [...prev, { role: 'assistant', content: result.response.text() }]);
         } catch (error) {
-            setMessages(prev => [...prev, {
-                role: 'assistant',
-                content: "Sorry, I'm having trouble connecting. Please try again in a moment! 🔄"
-            }]);
+            console.error("Chat Error:", error);
+            const errorMsg = error.message === "API_KEY_MISSING" 
+                ? "I need a Gemini API Key to work! Please add VITE_GEMINI_API_KEY to your .env file." 
+                : "Sorry, I'm having trouble connecting right now. Please try again! 🔄";
+            setMessages(prev => [...prev, { role: 'assistant', content: errorMsg }]);
         } finally {
             setIsLoading(false);
         }

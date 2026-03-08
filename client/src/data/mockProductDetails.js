@@ -25,25 +25,45 @@ export const mockProductDetails = {
         { store: "Meesho", price: 135000, logo: "/logos/meesho.svg", link: "https://meesho.com", best: false }
     ],
 
-    // Bank & Card Offers
-    bank_offers: [
-        { bank: "HDFC Bank", type: "Credit Card", discount: "₹5,000 Instant Discount", code: "Auto-applied", icon: "💳", color: "#004C8F" },
-        { bank: "ICICI Bank", type: "Credit Card", discount: "₹4,000 Cashback", code: "ICICI4K", icon: "💳", color: "#F37021" },
-        { bank: "SBI", type: "Credit & Debit Card", discount: "₹3,500 Instant Discount", code: "SBI3500", icon: "🏦", color: "#22409A" },
-        { bank: "Axis Bank", type: "Credit Card", discount: "5% Unlimited Cashback", code: "Auto-applied", icon: "💳", color: "#97144D" },
-        { bank: "Kotak", type: "Debit Card", discount: "₹2,500 Cashback", code: "KOTAK25", icon: "💳", color: "#ED1C24" },
-        { bank: "BOB", type: "Credit Card", discount: "₹2,000 Instant Discount", code: "BOB2000", icon: "🏦", color: "#F26722" },
-    ],
+    // Bank & Card Offers — grouped by platform
+    bank_offers: {
+        Amazon: [
+            { bank: "HDFC Bank", type: "Credit Card", discount: "₹5,000 Instant Discount", code: "Auto-applied", icon: "💳", color: "#004C8F" },
+            { bank: "SBI", type: "Credit & Debit Card", discount: "₹3,500 Instant Discount", code: "SBI3500", icon: "🏦", color: "#22409A" },
+            { bank: "ICICI Bank", type: "Credit Card", discount: "₹4,000 Cashback", code: "ICICI4K", icon: "💳", color: "#F37021" },
+        ],
+        Flipkart: [
+            { bank: "Axis Bank", type: "Credit Card", discount: "5% Unlimited Cashback", code: "Auto-applied", icon: "💳", color: "#97144D" },
+            { bank: "HDFC Bank", type: "Credit Card", discount: "₹3,000 Instant Discount", code: "Auto-applied", icon: "💳", color: "#004C8F" },
+            { bank: "Kotak", type: "Debit Card", discount: "₹2,500 Cashback", code: "KOTAK25", icon: "💳", color: "#ED1C24" },
+        ],
+        Croma: [
+            { bank: "BOB", type: "Credit Card", discount: "₹2,000 Instant Discount", code: "BOB2000", icon: "🏦", color: "#F26722" },
+            { bank: "HDFC Bank", type: "Credit Card", discount: "₹2,000 Cashback", code: "Auto-applied", icon: "💳", color: "#004C8F" },
+        ],
+    },
 
-    // EMI Plans
-    emi_plans: [
-        { months: 3, monthly: 43333, interest: "No Cost EMI", banks: ["HDFC", "ICICI", "SBI", "Axis"] },
-        { months: 6, monthly: 22167, interest: "No Cost EMI", banks: ["HDFC", "ICICI", "SBI"] },
-        { months: 9, monthly: 15111, interest: "No Cost EMI", banks: ["HDFC", "ICICI"] },
-        { months: 12, monthly: 11583, interest: "Low Interest", banks: ["HDFC", "SBI", "Axis", "Kotak"] },
-        { months: 18, monthly: 8000, interest: "Standard EMI", banks: ["HDFC", "ICICI", "SBI"] },
-        { months: 24, monthly: 6250, interest: "Standard EMI", banks: ["All Banks"] },
-    ],
+    // EMI Plans — grouped by platform
+    emi_plans: {
+        Amazon: [
+            { months: 3, monthly: 43333, interest: "No Cost EMI", banks: ["HDFC", "ICICI", "SBI"] },
+            { months: 6, monthly: 22167, interest: "No Cost EMI", banks: ["HDFC", "ICICI"] },
+            { months: 12, monthly: 11583, interest: "Low Interest", banks: ["HDFC", "SBI", "Axis", "Kotak"] },
+            { months: 24, monthly: 6250, interest: "Standard EMI", banks: ["All Banks"] },
+        ],
+        Flipkart: [
+            { months: 3, monthly: 43333, interest: "No Cost EMI", banks: ["Axis", "HDFC"] },
+            { months: 6, monthly: 22167, interest: "No Cost EMI", banks: ["HDFC", "ICICI", "SBI"] },
+            { months: 9, monthly: 15111, interest: "No Cost EMI", banks: ["HDFC", "ICICI"] },
+            { months: 12, monthly: 11583, interest: "Low Interest", banks: ["HDFC", "SBI"] },
+            { months: 18, monthly: 8000, interest: "Standard EMI", banks: ["All Banks"] },
+        ],
+        Croma: [
+            { months: 6, monthly: 22500, interest: "No Cost EMI", banks: ["HDFC", "ICICI"] },
+            { months: 12, monthly: 11900, interest: "Low Interest", banks: ["HDFC", "SBI", "Kotak"] },
+            { months: 24, monthly: 6400, interest: "Standard EMI", banks: ["All Banks"] },
+        ],
+    },
 
     // Sale & Discount Info
     sale_info: {
@@ -56,16 +76,6 @@ export const mockProductDetails = {
         exchange_discount: "Up to ₹19,000 off on exchange",
         no_cost_emi: true,
     },
-
-    // Store-specific offers
-    offers: [
-        { store: "Flipkart", description: "5% Unlimited Cashback on Flipkart Axis Bank Credit Card", type: "credit" },
-        { store: "Amazon", description: "Flat ₹5,000 Instant Discount on HDFC Bank Credit Card", type: "credit" },
-        { store: "Amazon", description: "₹3,500 Off on SBI Credit & Debit Cards", type: "both" },
-        { store: "Croma", description: "Exchange Bonus up to ₹6,000 + Extra ₹2,000 on Croma Card", type: "exchange" },
-        { store: "Flipkart", description: "No Cost EMI starting ₹11,583/month for 12 months", type: "emi" },
-        { store: "Meesho", description: "Extra ₹1,500 Off with ICICI Credit Card", type: "credit" },
-    ],
 
     // Protection Plans
     protection_plans: [

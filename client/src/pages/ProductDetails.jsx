@@ -31,6 +31,7 @@ ChartJS.register(
     Legend
 );
 
+import { fallbackCatalog } from '../data/fallbackCatalog';
 import axios from 'axios';
 // ... existing imports
 
@@ -50,6 +51,8 @@ const ProductDetails = () => {
     const [appliedOffers, setAppliedOffers] = useState({});
     const [copiedCode, setCopiedCode] = useState(null);
     const [showCartFeedback, setShowCartFeedback] = useState(false);
+    const [activeOfferPlatform, setActiveOfferPlatform] = useState(null);
+    const [activeEmiPlatform, setActiveEmiPlatform] = useState(null);
 
     const { addToCart, addToWishlist, removeFromWishlist, isInWishlist, isInCart } = useCart();
 
@@ -83,36 +86,6 @@ const ProductDetails = () => {
         navigator.clipboard.writeText(code);
         setCopiedCode(code);
         setTimeout(() => setCopiedCode(null), 2000);
-    };
-
-    // Local fallback catalog for when AI service is not running
-    const fallbackCatalog = {
-        'iphone_15': { name: 'Apple iPhone 15 (128 GB) - Black', image: 'https://m.media-amazon.com/images/I/71657TiFeHL._SX679_.jpg', price: 72999, original_price: 79900, rating: 4.6, reviews_count: 3450, category: 'Smartphones', price_comparison: [{ store: 'Amazon', price: 72999, logo: 'https://upload.wikimedia.org/wikipedia/commons/4/4a/Amazon_icon.svg', best: true }, { store: 'Flipkart', price: 73500, logo: 'https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/flipkart-icon.png', best: false }, { store: 'Croma', price: 79900, logo: 'https://logo.clearbit.com/croma.com', best: false }], ai_recommendation: { store: 'Amazon', reason: 'Lowest price with free 1-day delivery for Prime members.', score: 9.2 } },
-        'samsung_s24': { name: 'Samsung Galaxy S24 Ultra 5G AI Smartphone', image: 'https://m.media-amazon.com/images/I/71CXhVhpM0L._SX679_.jpg', price: 128500, original_price: 134999, rating: 4.5, reviews_count: 1250, category: 'Smartphones', price_comparison: [{ store: 'Amazon', price: 129999, logo: 'https://upload.wikimedia.org/wikipedia/commons/4/4a/Amazon_icon.svg', best: false }, { store: 'Flipkart', price: 128500, logo: 'https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/flipkart-icon.png', best: true }], ai_recommendation: { store: 'Flipkart', reason: 'Best price with bank offers applied.', score: 9.6 } },
-        'oneplus_12': { name: 'OnePlus 12 (Flowy Emerald, 16GB RAM, 512GB)', image: 'https://m.media-amazon.com/images/I/717Qo4MH97L._SX679_.jpg', price: 69999, original_price: 75999, rating: 4.4, reviews_count: 890, category: 'Smartphones', price_comparison: [{ store: 'Amazon', price: 69999, logo: 'https://upload.wikimedia.org/wikipedia/commons/4/4a/Amazon_icon.svg', best: true }, { store: 'Flipkart', price: 70500, logo: 'https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/flipkart-icon.png', best: false }], ai_recommendation: { store: 'Amazon', reason: 'Exclusive bank offers available.', score: 8.9 } },
-        'pixel_8': { name: 'Google Pixel 8 (Hazel, 128 GB)', image: 'https://fdn2.gsmarena.com/vv/bigpic/google-pixel-8.jpg', price: 62999, original_price: 75999, rating: 4.3, reviews_count: 450, category: 'Smartphones', price_comparison: [{ store: 'Amazon', price: 65999, logo: 'https://upload.wikimedia.org/wikipedia/commons/4/4a/Amazon_icon.svg', best: false }, { store: 'Flipkart', price: 62999, logo: 'https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/flipkart-icon.png', best: true }], ai_recommendation: { store: 'Flipkart', reason: 'Significant price drop this week.', score: 9.1 } },
-        'xiaomi_14_pro': { name: 'Xiaomi 14 Pro 5G (Obsidian Black, 12GB)', image: 'https://fdn2.gsmarena.com/vv/bigpic/xiaomi-14-pro.jpg', price: 54999, original_price: 59999, rating: 4.3, reviews_count: 620, category: 'Smartphones', price_comparison: [{ store: 'Amazon', price: 56999, logo: 'https://upload.wikimedia.org/wikipedia/commons/4/4a/Amazon_icon.svg', best: false }, { store: 'Flipkart', price: 54999, logo: 'https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/flipkart-icon.png', best: true }, { store: 'Croma', price: 59999, logo: 'https://logo.clearbit.com/croma.com', best: false }], ai_recommendation: { store: 'Flipkart', reason: 'Best price with Leica camera. Extra bank offers on ICICI cards.', score: 8.7 } },
-        'vivo_x100_pro': { name: 'Vivo X100 Pro 5G (Asteroid Black, 16GB)', image: 'https://fdn2.gsmarena.com/vv/bigpic/vivo-x100-pro.jpg', price: 89999, original_price: 99999, rating: 4.5, reviews_count: 480, category: 'Smartphones', price_comparison: [{ store: 'Amazon', price: 89999, logo: 'https://upload.wikimedia.org/wikipedia/commons/4/4a/Amazon_icon.svg', best: true }, { store: 'Flipkart', price: 91999, logo: 'https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/flipkart-icon.png', best: false }], ai_recommendation: { store: 'Amazon', reason: 'Zeiss camera flagship at lowest price.', score: 9.0 } },
-        'realme_gt5_pro': { name: 'Realme GT 5 Pro 5G (Racing Green, 12GB)', image: 'https://fdn2.gsmarena.com/vv/bigpic/realme-gt5-pro.jpg', price: 35999, original_price: 40999, rating: 4.4, reviews_count: 720, category: 'Smartphones', price_comparison: [{ store: 'Amazon', price: 36999, logo: 'https://upload.wikimedia.org/wikipedia/commons/4/4a/Amazon_icon.svg', best: false }, { store: 'Flipkart', price: 35999, logo: 'https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/flipkart-icon.png', best: true }], ai_recommendation: { store: 'Flipkart', reason: 'Best Snapdragon 8 Gen 3 phone under ₹40K.', score: 9.3 } },
-        'nothing_phone_2': { name: 'Nothing Phone (2) 5G (White, 12GB, 256GB)', image: 'https://fdn2.gsmarena.com/vv/bigpic/nothing-phone2.jpg', price: 34999, original_price: 44999, rating: 4.3, reviews_count: 1100, category: 'Smartphones', price_comparison: [{ store: 'Amazon', price: 37999, logo: 'https://upload.wikimedia.org/wikipedia/commons/4/4a/Amazon_icon.svg', best: false }, { store: 'Flipkart', price: 34999, logo: 'https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/flipkart-icon.png', best: true }], ai_recommendation: { store: 'Flipkart', reason: 'Unique Glyph interface at massive 22% discount.', score: 8.8 } },
-        'samsung_s23_ultra': { name: 'Samsung Galaxy S23 Ultra 5G (Cream, 12GB)', image: 'https://fdn2.gsmarena.com/vv/bigpic/samsung-galaxy-s23-ultra-5g.jpg', price: 99999, original_price: 124999, rating: 4.7, reviews_count: 5200, category: 'Smartphones', price_comparison: [{ store: 'Amazon', price: 99999, logo: 'https://upload.wikimedia.org/wikipedia/commons/4/4a/Amazon_icon.svg', best: true }, { store: 'Flipkart', price: 102999, logo: 'https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/flipkart-icon.png', best: false }, { store: 'Croma', price: 109999, logo: 'https://logo.clearbit.com/croma.com', best: false }], ai_recommendation: { store: 'Amazon', reason: 'Previous gen flagship at massive discount. Best camera phone under ₹1 lakh.', score: 9.5 } },
-        'samsung_a55': { name: 'Samsung Galaxy A55 5G (Awesome Iceblue, 8GB)', image: 'https://fdn2.gsmarena.com/vv/bigpic/samsung-galaxy-a55.jpg', price: 27999, original_price: 32999, rating: 4.2, reviews_count: 2100, category: 'Smartphones', price_comparison: [{ store: 'Amazon', price: 28499, logo: 'https://upload.wikimedia.org/wikipedia/commons/4/4a/Amazon_icon.svg', best: false }, { store: 'Flipkart', price: 27999, logo: 'https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/flipkart-icon.png', best: true }], ai_recommendation: { store: 'Flipkart', reason: 'Best mid-range Samsung with 4 years of OS updates.', score: 8.6 } },
-        'redmi_note_13_pro': { name: 'Redmi Note 13 Pro+ 5G (Fusion Purple, 12GB)', image: 'https://fdn2.gsmarena.com/vv/bigpic/xiaomi-redmi-note-13-pro-plus.jpg', price: 29999, original_price: 33999, rating: 4.3, reviews_count: 3200, category: 'Smartphones', price_comparison: [{ store: 'Amazon', price: 29999, logo: 'https://upload.wikimedia.org/wikipedia/commons/4/4a/Amazon_icon.svg', best: true }, { store: 'Flipkart', price: 30499, logo: 'https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/flipkart-icon.png', best: false }], ai_recommendation: { store: 'Amazon', reason: '200MP camera phone under ₹30K! Best seller.', score: 9.0 } },
-        'pixel_7a': { name: 'Google Pixel 7a (Charcoal, 128 GB)', image: 'https://fdn2.gsmarena.com/vv/bigpic/google-pixel-7a.jpg', price: 28999, original_price: 43999, rating: 4.4, reviews_count: 2200, category: 'Smartphones', price_comparison: [{ store: 'Amazon', price: 30999, logo: 'https://upload.wikimedia.org/wikipedia/commons/4/4a/Amazon_icon.svg', best: false }, { store: 'Flipkart', price: 28999, logo: 'https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/flipkart-icon.png', best: true }], ai_recommendation: { store: 'Flipkart', reason: 'Best camera under ₹30K. 34% price drop.', score: 9.4 } },
-        'poco_f6_pro': { name: 'POCO F6 Pro 5G (Black, 12GB RAM, 256GB)', image: 'https://fdn2.gsmarena.com/vv/bigpic/xiaomi-poco-f6-pro.jpg', price: 31999, original_price: 34999, rating: 4.4, reviews_count: 920, category: 'Smartphones', price_comparison: [{ store: 'Amazon', price: 32999, logo: 'https://upload.wikimedia.org/wikipedia/commons/4/4a/Amazon_icon.svg', best: false }, { store: 'Flipkart', price: 31999, logo: 'https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/flipkart-icon.png', best: true }], ai_recommendation: { store: 'Flipkart', reason: 'Snapdragon 8s Gen 3 beast at budget price.', score: 9.1 } },
-        'macbook_air_m2': { name: 'Apple MacBook Air M2 13.6-inch, 8GB RAM, 256GB SSD', image: 'https://m.media-amazon.com/images/I/71f5Eu5lJSL._SX679_.jpg', price: 86990, original_price: 114900, rating: 4.7, reviews_count: 1400, category: 'Laptops', price_comparison: [{ store: 'Amazon', price: 99900, logo: 'https://upload.wikimedia.org/wikipedia/commons/4/4a/Amazon_icon.svg', best: false }, { store: 'Flipkart', price: 86990, logo: 'https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/flipkart-icon.png', best: true }], ai_recommendation: { store: 'Flipkart', reason: 'Massive discount for the Midnight variant.', score: 9.5 } },
-        'dell_xps_13': { name: 'Dell XPS 13 Plus, Intel Core i7, 16GB, 1TB SSD', image: 'https://i.dell.com/is/image/DellContent/content/dam/ss2/product-images/dell-client-products/notebooks/xps-notebooks/xps-13-9320/media-gallery/copy-of-xs9320nt-cnb-05-bk.psd?fmt=png-alpha&pscan=auto&scl=1&hei=402&wid=555', price: 159990, original_price: 199990, rating: 4.2, reviews_count: 120, category: 'Laptops', price_comparison: [{ store: 'Amazon', price: 164990, logo: 'https://upload.wikimedia.org/wikipedia/commons/4/4a/Amazon_icon.svg', best: false }, { store: 'Flipkart', price: 159990, logo: 'https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/flipkart-icon.png', best: true }], ai_recommendation: { store: 'Flipkart', reason: 'Better pricing with exchange offers.', score: 8.5 } },
-        'hp_spectre': { name: 'HP Spectre x360 2-in-1 13.5-inch, Intel Evo i7', image: 'https://m.media-amazon.com/images/I/61s7s+4-+5L._SX679_.jpg', price: 134999, original_price: 150000, rating: 4.5, reviews_count: 310, category: 'Laptops', price_comparison: [{ store: 'Amazon', price: 134999, logo: 'https://upload.wikimedia.org/wikipedia/commons/4/4a/Amazon_icon.svg', best: true }, { store: 'Flipkart', price: 139999, logo: 'https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/flipkart-icon.png', best: false }], ai_recommendation: { store: 'Amazon', reason: 'Reliable seller with extended warranty.', score: 9.0 } },
-        'sony_headphones': { name: 'Sony WH-1000XM5 Wireless Noise Cancelling Headphones', image: 'https://m.media-amazon.com/images/I/51SKmu2G9FL._SX679_.jpg', price: 29990, original_price: 34990, rating: 4.8, reviews_count: 8900, category: 'Audio', price_comparison: [{ store: 'Amazon', price: 29990, logo: 'https://upload.wikimedia.org/wikipedia/commons/4/4a/Amazon_icon.svg', best: true }, { store: 'Flipkart', price: 31990, logo: 'https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/flipkart-icon.png', best: false }], ai_recommendation: { store: 'Amazon', reason: 'Best deal currently. Price dropped ₹2000 this week.', score: 9.8 } },
-        'airpods_pro': { name: 'Apple AirPods Pro (2nd Gen) with MagSafe Case', image: 'https://m.media-amazon.com/images/I/61SUj2aKoEL._SX679_.jpg', price: 22999, original_price: 24900, rating: 4.7, reviews_count: 5600, category: 'Audio', price_comparison: [{ store: 'Amazon', price: 22999, logo: 'https://upload.wikimedia.org/wikipedia/commons/4/4a/Amazon_icon.svg', best: true }, { store: 'Flipkart', price: 23499, logo: 'https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/flipkart-icon.png', best: false }], ai_recommendation: { store: 'Amazon', reason: 'Lowest price online.', score: 9.3 } },
-        'jbl_flip_6': { name: 'JBL Flip 6 Wireless Portable Bluetooth Speaker', image: 'https://m.media-amazon.com/images/I/61+R5r29rQL._SX679_.jpg', price: 9999, original_price: 14999, rating: 4.5, reviews_count: 12000, category: 'Audio', price_comparison: [{ store: 'Amazon', price: 9999, logo: 'https://upload.wikimedia.org/wikipedia/commons/4/4a/Amazon_icon.svg', best: true }, { store: 'Flipkart', price: 10499, logo: 'https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/flipkart-icon.png', best: false }], ai_recommendation: { store: 'Amazon', reason: 'Best value portable speaker.', score: 8.8 } },
-        'apple_watch_ultra': { name: 'Apple Watch Ultra 2 (GPS + Cellular, 49mm) Titanium', image: 'https://m.media-amazon.com/images/I/81P5-189VzL._SX679_.jpg', price: 89900, original_price: 89900, rating: 4.9, reviews_count: 890, category: 'Watches', price_comparison: [{ store: 'Amazon', price: 89900, logo: 'https://upload.wikimedia.org/wikipedia/commons/4/4a/Amazon_icon.svg', best: true }, { store: 'Flipkart', price: 89999, logo: 'https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/flipkart-icon.png', best: false }], ai_recommendation: { store: 'Amazon', reason: 'Amazon offers faster delivery.', score: 9.0 } },
-        'samsung_watch_6': { name: 'Samsung Galaxy Watch6 Classic LTE (47mm, Black)', image: 'https://m.media-amazon.com/images/I/61N+x-jA9UL._SX679_.jpg', price: 36999, original_price: 40999, rating: 4.4, reviews_count: 1500, category: 'Watches', price_comparison: [{ store: 'Amazon', price: 37999, logo: 'https://upload.wikimedia.org/wikipedia/commons/4/4a/Amazon_icon.svg', best: false }, { store: 'Flipkart', price: 36999, logo: 'https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/flipkart-icon.png', best: true }], ai_recommendation: { store: 'Flipkart', reason: 'Cheapest option for the LTE version.', score: 9.2 } },
-        'playstation_5': { name: 'Sony PlayStation 5 Console (Slim)', image: 'https://m.media-amazon.com/images/I/51051FiD9UL._SX679_.jpg', price: 54990, original_price: 54990, rating: 4.8, reviews_count: 5600, category: 'Gaming', price_comparison: [{ store: 'Amazon', price: 54990, logo: 'https://upload.wikimedia.org/wikipedia/commons/4/4a/Amazon_icon.svg', best: true }, { store: 'Flipkart', price: 54990, logo: 'https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/flipkart-icon.png', best: true }], ai_recommendation: { store: 'Amazon', reason: 'Reliable stock availability.', score: 9.5 } },
-        'xbox_series_x': { name: 'Xbox Series X Console', image: 'https://m.media-amazon.com/images/I/61-jjE67uqL._SX679_.jpg', price: 49990, original_price: 54990, rating: 4.7, reviews_count: 4200, category: 'Gaming', price_comparison: [{ store: 'Amazon', price: 49990, logo: 'https://upload.wikimedia.org/wikipedia/commons/4/4a/Amazon_icon.svg', best: true }, { store: 'Flipkart', price: 48990, logo: 'https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/flipkart-icon.png', best: false }], ai_recommendation: { store: 'Amazon', reason: 'In stock and ready to ship.', score: 9.3 } },
-        'nike_air_jordan': { name: "Nike Air Jordan 1 Retro High OG 'Chicago'", image: 'https://m.media-amazon.com/images/I/71zLz6m5Q+L._AC_UY1100_.jpg', price: 16995, original_price: 18995, rating: 4.9, reviews_count: 450, category: 'Footwear', price_comparison: [{ store: 'Amazon', price: 16995, logo: 'https://upload.wikimedia.org/wikipedia/commons/4/4a/Amazon_icon.svg', best: true }, { store: 'Flipkart', price: 18995, logo: 'https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/flipkart-icon.png', best: false }], ai_recommendation: { store: 'Amazon', reason: 'Rare stock at retail price.', score: 9.4 } },
-        'adidas_ultraboost': { name: "Adidas Men's Ultraboost Light Running Shoes", image: 'https://assets.adidas.com/images/h_840,f_auto,q_auto,fl_lossy,c_fill,g_auto/0fbed4646c1d46e0aae0afc90122d10d_9366/Ultraboost_Light_Running_Shoes_White_HQ6351_01_standard.jpg', price: 11999, original_price: 18999, rating: 4.6, reviews_count: 2100, category: 'Footwear', price_comparison: [{ store: 'Amazon', price: 12500, logo: 'https://upload.wikimedia.org/wikipedia/commons/4/4a/Amazon_icon.svg', best: false }, { store: 'Flipkart', price: 11999, logo: 'https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/flipkart-icon.png', best: true }], ai_recommendation: { store: 'Flipkart', reason: 'Great discount on latest model.', score: 9.1 } },
-        'puma_nitro': { name: "Puma Deviate Nitro 2 Men's Running Shoes", image: 'https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_600,h_600/global/376807/01/sv01/fnd/IND/fmt/png', price: 13999, original_price: 15999, rating: 4.3, reviews_count: 850, category: 'Footwear', price_comparison: [{ store: 'Amazon', price: 13999, logo: 'https://upload.wikimedia.org/wikipedia/commons/4/4a/Amazon_icon.svg', best: true }, { store: 'Flipkart', price: 14500, logo: 'https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/flipkart-icon.png', best: false }], ai_recommendation: { store: 'Amazon', reason: 'Direct from brand partnership.', score: 8.7 } },
     };
 
     // Helper to generate price history from price_comparison
@@ -410,104 +383,190 @@ const ProductDetails = () => {
                             </ul>
                         </div>
 
-                        {/* Bank & Card Offers - Interactive */}
-                        <div className="bg-white dark:bg-darkSurface rounded-2xl shadow-lg border border-gray-100 dark:border-gray-800 overflow-hidden">
-                            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-4 border-b border-blue-100 dark:border-blue-800/30">
-                                <h3 className="font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                                    <CreditCard size={20} className="text-blue-600" /> Bank & Card Offers
-                                </h3>
-                                <p className="text-xs text-gray-500 mt-1">Apply offers at checkout for extra savings</p>
-                            </div>
-                            <div className="p-4 space-y-2.5">
-                                {(product.bank_offers || product.offers || []).slice(0, 6).map((offer, i) => (
-                                    <motion.div key={i} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }}
-                                        className={`flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer ${appliedOffers[i] ? 'border-green-300 dark:border-green-700 bg-green-50 dark:bg-green-900/10 shadow-md shadow-green-100 dark:shadow-green-900/20' : 'border-gray-100 dark:border-gray-700/50 hover:bg-gray-50 dark:hover:bg-gray-800/30'}`}
-                                        onClick={() => toggleOffer(i)}>
-                                        <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0 shadow-sm"
-                                            style={{ backgroundColor: `${(offer.color || '#4F46E5')}15`, border: `1px solid ${(offer.color || '#4F46E5')}30` }}>
-                                            {offer.icon || '💳'}
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-sm font-bold text-gray-800 dark:text-gray-200">{offer.bank || offer.store}</span>
-                                                {offer.type && <span className="text-[9px] font-semibold bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded-full">{offer.type}</span>}
-                                            </div>
-                                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{offer.discount || offer.description}</p>
-                                            {offer.code && offer.code !== 'Auto-applied' && (
-                                                <button onClick={(e) => { e.stopPropagation(); copyCode(offer.code); }}
-                                                    className="inline-block mt-1 text-[10px] font-mono font-bold bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 px-2 py-0.5 rounded border border-dashed border-green-300 dark:border-green-700 hover:bg-green-100 dark:hover:bg-green-800/30 cursor-pointer transition-colors">
-                                                    {copiedCode === offer.code ? '✓ Copied!' : `📋 ${offer.code}`}
-                                                </button>
-                                            )}
-                                        </div>
-                                        <button onClick={(e) => { e.stopPropagation(); toggleOffer(i); }}
-                                            className={`px-3 py-1.5 rounded-lg text-xs font-bold shrink-0 transition-all ${appliedOffers[i]
-                                                ? 'bg-green-600 text-white shadow-md'
-                                                : 'bg-primary/10 text-primary hover:bg-primary hover:text-white'
-                                                }`}>
-                                            {appliedOffers[i] ? '✓ Applied' : 'Apply'}
-                                        </button>
-                                    </motion.div>
-                                ))}
-                                {Object.values(appliedOffers).some(v => v) && (
-                                    <div className="mt-3 p-3 bg-green-50 dark:bg-green-900/10 rounded-xl border border-green-200 dark:border-green-800/30 text-center">
-                                        <p className="text-xs font-bold text-green-700 dark:text-green-300">
-                                            🎉 {Object.values(appliedOffers).filter(v => v).length} offer(s) applied · Savings will reflect at checkout
-                                        </p>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
+                        {/* Bank & Card Offers - Platform Segregated */}
+                        {(() => {
+                            // Normalize: support both object-keyed (new) and array (legacy) formats
+                            const offersRaw = product.bank_offers || product.offers || {};
+                            const isGrouped = offersRaw && !Array.isArray(offersRaw) && typeof offersRaw === 'object';
+                            const offerPlatforms = isGrouped ? Object.keys(offersRaw) : [];
+                            const currentOfferPlatform = activeOfferPlatform || offerPlatforms[0] || '';
+                            const currentOffers = isGrouped ? (offersRaw[currentOfferPlatform] || []) : (Array.isArray(offersRaw) ? offersRaw : []);
 
-                        {/* EMI Plans - Interactive */}
-                        {product.emi_plans && (
-                            <div className="bg-white dark:bg-darkSurface rounded-2xl shadow-lg border border-gray-100 dark:border-gray-800 overflow-hidden">
-                                <div className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 p-4 border-b border-purple-100 dark:border-purple-800/30">
-                                    <h3 className="font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                                        <Wallet size={20} className="text-purple-600" /> EMI Plans
-                                    </h3>
-                                    <p className="text-xs text-gray-500 mt-1">No Cost & Low Interest EMI available</p>
-                                </div>
-                                <div className="p-4">
-                                    <div className="grid grid-cols-3 gap-2.5">
-                                        {product.emi_plans.map((emi, i) => (
-                                            <motion.div key={i} whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}
-                                                onClick={() => setSelectedEmi(i === selectedEmi ? null : i)}
-                                                className={`relative rounded-xl border-2 p-3 text-center cursor-pointer transition-all ${selectedEmi === i
-                                                    ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20 shadow-lg shadow-purple-200 dark:shadow-purple-900/30'
-                                                    : 'border-gray-100 dark:border-gray-700/50 hover:border-purple-300 dark:hover:border-purple-600 hover:shadow-md'
-                                                    }`}>
-                                                {emi.interest === 'No Cost EMI' && (
-                                                    <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 text-[8px] font-bold bg-green-500 text-white px-2 py-0.5 rounded-full shadow-sm">NO COST</span>
-                                                )}
-                                                {selectedEmi === i && (
-                                                    <CheckCircle size={14} className="absolute top-1.5 right-1.5 text-purple-600" />
-                                                )}
-                                                <p className="text-xl font-extrabold text-gray-900 dark:text-white mt-1">{emi.months}</p>
-                                                <p className="text-[9px] text-gray-400 uppercase font-semibold tracking-wider">months</p>
-                                                <p className="text-sm font-bold text-primary mt-1.5">₹{emi.monthly.toLocaleString()}<span className="text-[9px] text-gray-400">/mo</span></p>
-                                                <p className="text-[9px] text-gray-400 mt-1">{emi.banks?.slice(0, 2).join(', ')}{emi.banks?.length > 2 ? ` +${emi.banks.length - 2}` : ''}</p>
-                                            </motion.div>
-                                        ))}
+                            return currentOffers.length > 0 || offerPlatforms.length > 0 ? (
+                                <div className="bg-white dark:bg-darkSurface rounded-2xl shadow-lg border border-gray-100 dark:border-gray-800 overflow-hidden">
+                                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-4 border-b border-blue-100 dark:border-blue-800/30">
+                                        <h3 className="font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                                            <CreditCard size={20} className="text-blue-600" /> Bank & Card Offers
+                                        </h3>
+                                        <p className="text-xs text-gray-500 mt-1">Apply offers at checkout for extra savings</p>
                                     </div>
-                                    {selectedEmi !== null && (
-                                        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}
-                                            className="mt-4 p-4 bg-purple-50 dark:bg-purple-900/10 rounded-xl border border-purple-200 dark:border-purple-800/30">
-                                            <div className="flex justify-between items-center">
-                                                <div>
-                                                    <p className="text-sm font-bold text-gray-800 dark:text-white">{product.emi_plans[selectedEmi].months} Month EMI Plan</p>
-                                                    <p className="text-xs text-gray-500 mt-0.5">{product.emi_plans[selectedEmi].interest} · {product.emi_plans[selectedEmi].banks?.join(', ')}</p>
-                                                </div>
-                                                <div className="text-right">
-                                                    <p className="text-lg font-extrabold text-primary">₹{product.emi_plans[selectedEmi].monthly.toLocaleString()}<span className="text-xs text-gray-400">/mo</span></p>
-                                                    <p className="text-[10px] text-gray-400">Total: ₹{(product.emi_plans[selectedEmi].monthly * product.emi_plans[selectedEmi].months).toLocaleString()}</p>
-                                                </div>
-                                            </div>
-                                        </motion.div>
+
+                                    {/* Platform Tabs */}
+                                    {isGrouped && offerPlatforms.length > 1 && (
+                                        <div className="flex border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30">
+                                            {offerPlatforms.map((platform) => {
+                                                const storeLogos = { 'Amazon': 'https://upload.wikimedia.org/wikipedia/commons/4/4a/Amazon_icon.svg', 'Flipkart': 'https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/flipkart-icon.png', 'Croma': 'https://logo.clearbit.com/croma.com' };
+                                                return (
+                                                    <button
+                                                        key={platform}
+                                                        onClick={() => { setActiveOfferPlatform(platform); setAppliedOffers({}); }}
+                                                        className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-semibold transition-all relative ${
+                                                            currentOfferPlatform === platform
+                                                                ? 'text-primary'
+                                                                : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
+                                                        }`}
+                                                    >
+                                                        <img src={storeLogos[platform] || ''} alt={platform} className="w-4 h-4 object-contain" />
+                                                        {platform}
+                                                        <span className="text-[10px] font-bold bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 px-1.5 py-0.5 rounded-full">{(offersRaw[platform] || []).length}</span>
+                                                        {currentOfferPlatform === platform && (
+                                                            <motion.div layoutId="offerTabIndicator" className="absolute bottom-0 left-2 right-2 h-0.5 bg-primary rounded-full" />
+                                                        )}
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
                                     )}
+
+                                    <div className="p-4 space-y-2.5">
+                                        <AnimatePresence mode="wait">
+                                            <motion.div key={currentOfferPlatform} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }} transition={{ duration: 0.15 }} className="space-y-2.5">
+                                                {currentOffers.map((offer, i) => (
+                                                    <motion.div key={i} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }}
+                                                        className={`flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer ${appliedOffers[`${currentOfferPlatform}_${i}`] ? 'border-green-300 dark:border-green-700 bg-green-50 dark:bg-green-900/10 shadow-md shadow-green-100 dark:shadow-green-900/20' : 'border-gray-100 dark:border-gray-700/50 hover:bg-gray-50 dark:hover:bg-gray-800/30'}`}
+                                                        onClick={() => toggleOffer(`${currentOfferPlatform}_${i}`)}>
+                                                        <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0 shadow-sm"
+                                                            style={{ backgroundColor: `${(offer.color || '#4F46E5')}15`, border: `1px solid ${(offer.color || '#4F46E5')}30` }}>
+                                                            {offer.icon || '💳'}
+                                                        </div>
+                                                        <div className="flex-1 min-w-0">
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="text-sm font-bold text-gray-800 dark:text-gray-200">{offer.bank || offer.store}</span>
+                                                                {offer.type && <span className="text-[9px] font-semibold bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded-full">{offer.type}</span>}
+                                                            </div>
+                                                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{offer.discount || offer.description}</p>
+                                                            {offer.code && offer.code !== 'Auto-applied' && (
+                                                                <button onClick={(e) => { e.stopPropagation(); copyCode(offer.code); }}
+                                                                    className="inline-block mt-1 text-[10px] font-mono font-bold bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 px-2 py-0.5 rounded border border-dashed border-green-300 dark:border-green-700 hover:bg-green-100 dark:hover:bg-green-800/30 cursor-pointer transition-colors">
+                                                                    {copiedCode === offer.code ? '✓ Copied!' : `📋 ${offer.code}`}
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                        <button onClick={(e) => { e.stopPropagation(); toggleOffer(`${currentOfferPlatform}_${i}`); }}
+                                                            className={`px-3 py-1.5 rounded-lg text-xs font-bold shrink-0 transition-all ${appliedOffers[`${currentOfferPlatform}_${i}`]
+                                                                ? 'bg-green-600 text-white shadow-md'
+                                                                : 'bg-primary/10 text-primary hover:bg-primary hover:text-white'
+                                                                }`}>
+                                                            {appliedOffers[`${currentOfferPlatform}_${i}`] ? '✓ Applied' : 'Apply'}
+                                                        </button>
+                                                    </motion.div>
+                                                ))}
+                                            </motion.div>
+                                        </AnimatePresence>
+                                        {Object.values(appliedOffers).some(v => v) && (
+                                            <div className="mt-3 p-3 bg-green-50 dark:bg-green-900/10 rounded-xl border border-green-200 dark:border-green-800/30 text-center">
+                                                <p className="text-xs font-bold text-green-700 dark:text-green-300">
+                                                    🎉 {Object.values(appliedOffers).filter(v => v).length} offer(s) applied · Savings will reflect at checkout
+                                                </p>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
-                            </div>
-                        )}
+                            ) : null;
+                        })()}
+
+                        {/* EMI Plans - Platform Segregated */}
+                        {(() => {
+                            const emiRaw = product.emi_plans;
+                            if (!emiRaw) return null;
+                            const isGrouped = emiRaw && !Array.isArray(emiRaw) && typeof emiRaw === 'object';
+                            const emiPlatforms = isGrouped ? Object.keys(emiRaw) : [];
+                            const currentEmiPlatform = activeEmiPlatform || emiPlatforms[0] || '';
+                            const currentEmis = isGrouped ? (emiRaw[currentEmiPlatform] || []) : (Array.isArray(emiRaw) ? emiRaw : []);
+
+                            return currentEmis.length > 0 ? (
+                                <div className="bg-white dark:bg-darkSurface rounded-2xl shadow-lg border border-gray-100 dark:border-gray-800 overflow-hidden">
+                                    <div className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 p-4 border-b border-purple-100 dark:border-purple-800/30">
+                                        <h3 className="font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                                            <Wallet size={20} className="text-purple-600" /> EMI Plans
+                                        </h3>
+                                        <p className="text-xs text-gray-500 mt-1">No Cost & Low Interest EMI available</p>
+                                    </div>
+
+                                    {/* Platform Tabs */}
+                                    {isGrouped && emiPlatforms.length > 1 && (
+                                        <div className="flex border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30">
+                                            {emiPlatforms.map((platform) => {
+                                                const storeLogos = { 'Amazon': 'https://upload.wikimedia.org/wikipedia/commons/4/4a/Amazon_icon.svg', 'Flipkart': 'https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/flipkart-icon.png', 'Croma': 'https://logo.clearbit.com/croma.com' };
+                                                const hasNoCost = (emiRaw[platform] || []).some(e => e.interest === 'No Cost EMI');
+                                                return (
+                                                    <button
+                                                        key={platform}
+                                                        onClick={() => { setActiveEmiPlatform(platform); setSelectedEmi(null); }}
+                                                        className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-semibold transition-all relative ${
+                                                            currentEmiPlatform === platform
+                                                                ? 'text-purple-600'
+                                                                : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
+                                                        }`}
+                                                    >
+                                                        <img src={storeLogos[platform] || ''} alt={platform} className="w-4 h-4 object-contain" />
+                                                        {platform}
+                                                        {hasNoCost && <span className="text-[8px] font-bold bg-green-500 text-white px-1.5 py-0.5 rounded-full">NC</span>}
+                                                        {currentEmiPlatform === platform && (
+                                                            <motion.div layoutId="emiTabIndicator" className="absolute bottom-0 left-2 right-2 h-0.5 bg-purple-600 rounded-full" />
+                                                        )}
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+
+                                    <div className="p-4">
+                                        <AnimatePresence mode="wait">
+                                            <motion.div key={currentEmiPlatform} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }} transition={{ duration: 0.15 }}>
+                                                <div className="grid grid-cols-3 gap-2.5">
+                                                    {currentEmis.map((emi, i) => (
+                                                        <motion.div key={i} whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}
+                                                            onClick={() => setSelectedEmi(i === selectedEmi ? null : i)}
+                                                            className={`relative rounded-xl border-2 p-3 text-center cursor-pointer transition-all ${selectedEmi === i
+                                                                ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20 shadow-lg shadow-purple-200 dark:shadow-purple-900/30'
+                                                                : 'border-gray-100 dark:border-gray-700/50 hover:border-purple-300 dark:hover:border-purple-600 hover:shadow-md'
+                                                                }`}>
+                                                            {emi.interest === 'No Cost EMI' && (
+                                                                <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 text-[8px] font-bold bg-green-500 text-white px-2 py-0.5 rounded-full shadow-sm">NO COST</span>
+                                                            )}
+                                                            {selectedEmi === i && (
+                                                                <CheckCircle size={14} className="absolute top-1.5 right-1.5 text-purple-600" />
+                                                            )}
+                                                            <p className="text-xl font-extrabold text-gray-900 dark:text-white mt-1">{emi.months}</p>
+                                                            <p className="text-[9px] text-gray-400 uppercase font-semibold tracking-wider">months</p>
+                                                            <p className="text-sm font-bold text-primary mt-1.5">₹{emi.monthly.toLocaleString()}<span className="text-[9px] text-gray-400">/mo</span></p>
+                                                            <p className="text-[9px] text-gray-400 mt-1">{emi.banks?.slice(0, 2).join(', ')}{emi.banks?.length > 2 ? ` +${emi.banks.length - 2}` : ''}</p>
+                                                        </motion.div>
+                                                    ))}
+                                                </div>
+                                                {selectedEmi !== null && currentEmis[selectedEmi] && (
+                                                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}
+                                                        className="mt-4 p-4 bg-purple-50 dark:bg-purple-900/10 rounded-xl border border-purple-200 dark:border-purple-800/30">
+                                                        <div className="flex justify-between items-center">
+                                                            <div>
+                                                                <p className="text-sm font-bold text-gray-800 dark:text-white">{currentEmis[selectedEmi].months} Month EMI Plan</p>
+                                                                <p className="text-xs text-gray-500 mt-0.5">{currentEmis[selectedEmi].interest} · {currentEmis[selectedEmi].banks?.join(', ')}</p>
+                                                                <p className="text-[10px] text-gray-400 mt-1">via {currentEmiPlatform}</p>
+                                                            </div>
+                                                            <div className="text-right">
+                                                                <p className="text-lg font-extrabold text-primary">₹{currentEmis[selectedEmi].monthly.toLocaleString()}<span className="text-xs text-gray-400">/mo</span></p>
+                                                                <p className="text-[10px] text-gray-400">Total: ₹{(currentEmis[selectedEmi].monthly * currentEmis[selectedEmi].months).toLocaleString()}</p>
+                                                            </div>
+                                                        </div>
+                                                    </motion.div>
+                                                )}
+                                            </motion.div>
+                                        </AnimatePresence>
+                                    </div>
+                                </div>
+                            ) : null;
+                        })()}
 
                         {/* Protection Plans */}
                         {product.protection_plans && (
